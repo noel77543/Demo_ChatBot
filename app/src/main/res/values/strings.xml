@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Demo_ChatBot</string>
+
+    <string name="notification_content">Demo_ChatBot正在背景執行</string>
+    <string name="close">X 關閉</string>
+    <string name="permission_message">請允許%s顯示在其他應用上層。</string>
+    <string name="permission_result_error">權限無法取得請再次確認!</string>
+</resources>
