@@ -110,7 +110,8 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
                     break;
             }
         }
-        return super.onStartCommand(intent, flags, startId);
+//        return super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
     }
     //----------
 

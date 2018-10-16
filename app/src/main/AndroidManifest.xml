@@ -22,7 +22,7 @@
             </intent-filter>
         </activity>
         <service android:name=".bubble.BubbleService"
-            android:exported="true"/>
+            android:exported="false"/>
     </application>
 
 </manifest>

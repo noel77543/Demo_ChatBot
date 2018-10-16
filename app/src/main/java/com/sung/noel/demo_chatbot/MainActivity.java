@@ -73,9 +73,6 @@ public class MainActivity extends AppCompatActivity {
 
     //-------------
 
-    /***
-     * 當允許 錄音
-     */
     @NeedsPermission(Manifest.permission.RECORD_AUDIO)
     void onAllowedRecord() {
         intent = new Intent(this, BubbleService.class);
@@ -93,9 +90,6 @@ public class MainActivity extends AppCompatActivity {
     }
     //-------------
 
-    /***
-     * 當 錄音
-     */
     @OnShowRationale(Manifest.permission.RECORD_AUDIO)
     void onShowRationaleRecord(final PermissionRequest request) {
         request.proceed();
@@ -103,9 +97,6 @@ public class MainActivity extends AppCompatActivity {
 
     //-------------
 
-    /***
-     * 當拒絕  錄音
-     */
     @OnPermissionDenied(Manifest.permission.RECORD_AUDIO)
     void onPermissionDeniedRecord() {
         normalNotification.displayNotification(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())), getString(R.string.notification_permission_record));
@@ -113,9 +104,6 @@ public class MainActivity extends AppCompatActivity {
     }
     //-------------
 
-    /***
-     * 當不再詢問  錄音
-     */
     @OnNeverAskAgain(Manifest.permission.RECORD_AUDIO)
     void onNeverAskAgainRecord() {
         normalNotification.displayNotification(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())), getString(R.string.notification_permission_record));
