@@ -5,4 +5,11 @@
     <string name="close">X 關閉</string>
     <string name="permission_message">請允許%s顯示在其他應用上層。</string>
     <string name="permission_result_error">權限無法取得請再次確認!</string>
+    <string name="toast_listen">我能為你做些甚麼?</string>
+    <string name="toast_listen_error">我不清楚你在說甚麼</string>
+    <string name="toast_speech_error">我不懂你的意思</string>
+
+    <string name="dialog_permission_title">基於權限安全性，Demo_ChatBot將向您索取權限使用權。</string>
+    <string name="dialog_permission_button">我瞭解了</string>
+
 </resources>

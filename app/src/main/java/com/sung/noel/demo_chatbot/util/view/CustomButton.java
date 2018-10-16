@@ -1,7 +1,9 @@
 package com.sung.noel.demo_chatbot.util.view;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -9,6 +11,7 @@ import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 
 import com.sung.noel.demo_chatbot.util.AnimationUtil;
@@ -19,17 +22,22 @@ import com.sung.noel.demo_chatbot.util.LayoutSizeUtil;
  * Created by noel on 2018/8/4.
  */
 
-public class FlowerButton extends FrameLayout implements Runnable, View.OnClickListener, View.OnTouchListener {
-
+public class CustomButton extends FrameLayout implements Runnable, View.OnClickListener, View.OnTouchListener, View.OnLongClickListener {
+    private final int strokeWidth = 3;
+    private final int strokeColor = Color.BLACK;
+    private final int fillColor = Color.WHITE;
     //當手指抬起  經過自訂時間後 縮小
     private final int _DELAY_SCALE = 1000;
+
+
     private int layoutWidth;
     private int layoutHeight;
 
     private OnMainButtonClickListener onMainButtonClickListener;
     private OnMainButtonSwipeListener onMainButtonSwipeListener;
+    private OnMainButtonLongClickListener onMainButtonLongClickListener;
     private LayoutParams mainButtonParams;
-    private BasicButton mainButton;
+    private Button mainButton;
     private int mainButtonSize;
 
 
@@ -40,18 +48,20 @@ public class FlowerButton extends FrameLayout implements Runnable, View.OnClickL
     private AnimationUtil animationUtil;
     private Handler handler;
     private Runnable runnable;
-
+    private boolean isSwiping = false;
+    private int lastX;
+    private int lastY;
 
     //----------
 
-    public FlowerButton(@NonNull Context context) {
+    public CustomButton(@NonNull Context context) {
         super(context);
         this.context = context;
         post(this);
     }
     //----------
 
-    public FlowerButton(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public CustomButton(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         this.context = context;
         post(this);
@@ -66,22 +76,32 @@ public class FlowerButton extends FrameLayout implements Runnable, View.OnClickL
     //----------
     private void init() {
         animationUtil = new AnimationUtil();
-        mainButton = new BasicButton(context);
+        mainButton = new Button(context);
         layoutSizeUtil = new LayoutSizeUtil(context);
-        int[] phoneSize = layoutSizeUtil.getPhoneSize();
-        phoneHeight = phoneSize[1];
-        phoneWidth = phoneSize[0];
         handler = new Handler();
         runnable = new Runnable() {
             @Override
             public void run() {
-                    animationUtil.hide(FlowerButton.this);
+                animationUtil.hide(CustomButton.this);
             }
         };
-        handler.postDelayed(runnable,_DELAY_SCALE);
+
+        mainButton.setBackground(getShape());
+        int[] phoneSize = layoutSizeUtil.getPhoneSize();
+        phoneHeight = phoneSize[1];
+        phoneWidth = phoneSize[0];
+        handler.postDelayed(runnable, _DELAY_SCALE);
         addMainButton();
     }
+    //-------
 
+    private GradientDrawable getShape() {
+        GradientDrawable gradientDrawable = new GradientDrawable();
+        gradientDrawable.setShape(GradientDrawable.OVAL);
+        gradientDrawable.setColor(fillColor);
+        gradientDrawable.setStroke(strokeWidth, strokeColor);
+        return gradientDrawable;
+    }
     //-------
 
     /***
@@ -97,6 +117,7 @@ public class FlowerButton extends FrameLayout implements Runnable, View.OnClickL
         mainButton.setLayoutParams(mainButtonParams);
         mainButton.setOnClickListener(this);
         mainButton.setOnTouchListener(this);
+        mainButton.setOnLongClickListener(this);
         addView(mainButton);
     }
 
@@ -109,18 +130,27 @@ public class FlowerButton extends FrameLayout implements Runnable, View.OnClickL
         int y = (int) motionEvent.getRawY();
         switch (motionEvent.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                lastX = x;
+                lastY = y;
                 handler.removeCallbacks(runnable);
                 animationUtil.show(this);
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (onMainButtonSwipeListener != null) {
                     // TODO   WindowManager的(0,0)起始點是定位於螢幕中心
-                    // TODO   所以X座標需要減少寬的1/2  Y座標需要減少高的1/2
-                    onMainButtonSwipeListener.onMainButtonSwipe(x - (phoneWidth / 2), y - (phoneHeight / 2));
+                    // TODO   所以X座標需要減少手機寬的1/2 後再減少球的寬度的1/2   同理Y座標需要減少手機高的1/2後再減少球的高度的1/2
+
+                    int centerX = x - (phoneWidth / 2) - (getWidth() / 2);
+                    int centerY = y - (phoneHeight / 2) - (getHeight() / 2);
+                    onMainButtonSwipeListener.onMainButtonSwipe(centerX, centerY);
+                    if (Math.abs(lastX - x) > 15 || Math.abs(lastY - y) > 15) {
+                        isSwiping = true;
+                    }
                 }
                 break;
             case MotionEvent.ACTION_UP:
-                handler.postDelayed(runnable,_DELAY_SCALE);
+                isSwiping = false;
+                handler.postDelayed(runnable, _DELAY_SCALE);
                 break;
 
         }
@@ -132,13 +162,24 @@ public class FlowerButton extends FrameLayout implements Runnable, View.OnClickL
 
     @Override
     public void onClick(View v) {
-            if (onMainButtonClickListener != null) {
-                onMainButtonClickListener.onMainButtonCLicked();
-            }
+        if (onMainButtonClickListener != null) {
+            onMainButtonClickListener.onMainButtonCLicked();
+        }
     }
+    //--------
 
 
+    @Override
+    public boolean onLongClick(View view) {
+        if (onMainButtonLongClickListener != null) {
+            if (!isSwiping) {
+                onMainButtonLongClickListener.onMainButtonLongClicked();
+                return true;
+            }
+        }
 
+        return false;
+    }
     //--------
 
     /***
@@ -189,6 +230,7 @@ public class FlowerButton extends FrameLayout implements Runnable, View.OnClickL
         mainButton.setBackgroundResource(imgRes);
     }
 
+
     //-------
     public interface OnMainButtonClickListener {
         void onMainButtonCLicked();
@@ -206,5 +248,14 @@ public class FlowerButton extends FrameLayout implements Runnable, View.OnClickL
 
     public void setOnMainButtonSwipeListener(OnMainButtonSwipeListener onMainButtonSwipeListener) {
         this.onMainButtonSwipeListener = onMainButtonSwipeListener;
+    }
+
+    //------------
+    public interface OnMainButtonLongClickListener {
+        void onMainButtonLongClicked();
+    }
+
+    public void setOnMainButtonLongClickListener(OnMainButtonLongClickListener onMainButtonLongClickListener) {
+        this.onMainButtonLongClickListener = onMainButtonLongClickListener;
     }
 }

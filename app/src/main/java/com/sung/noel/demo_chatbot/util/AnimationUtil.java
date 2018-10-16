@@ -5,7 +5,7 @@ import android.view.View;
 public class AnimationUtil {
 
     private final int _DURATION = 1000;
-    private final float _SCALE_SIZE = 0.7f;
+    private final float _SCALE_SIZE = 0.6f;
     private final float _SCALE_ALPHA = 0.2f;
 
     public AnimationUtil() {

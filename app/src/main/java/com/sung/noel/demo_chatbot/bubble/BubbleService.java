@@ -5,25 +5,38 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.IBinder;
+import android.speech.RecognitionListener;
+import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
+import android.speech.tts.TextToSpeech;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.sung.noel.demo_chatbot.MainActivity;
 import com.sung.noel.demo_chatbot.R;
+import com.sung.noel.demo_chatbot.util.SpeechRecognizeUtil;
+import com.sung.noel.demo_chatbot.util.TextToSpeechUtil;
 import com.sung.noel.demo_chatbot.util.notification.BubbleNotification;
-import com.sung.noel.demo_chatbot.util.view.FlowerButton;
+import com.sung.noel.demo_chatbot.util.view.CustomButton;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
-public class BubbleService extends Service implements FlowerButton.OnMainButtonSwipeListener {
+public class BubbleService extends Service implements CustomButton.OnMainButtonSwipeListener, CustomButton.OnMainButtonLongClickListener, SpeechRecognizeUtil.OnTextGetFromRecordListener {
     private final int _VIEW_SIZE = 150;
 
     private WindowManager windowManager;
     private BubbleNotification bubbleNotification;
     private WindowManager.LayoutParams params;
     private boolean isAdded = false;
-    private FlowerButton flowerButton;
-
+    private CustomButton customButton;
+    private SpeechRecognizeUtil speechRecognizeUtil;
+    private TextToSpeechUtil textToSpeechUtil;
 
     @Nullable
     @Override
@@ -36,9 +49,12 @@ public class BubbleService extends Service implements FlowerButton.OnMainButtonS
     @Override
     public void onCreate() {
         super.onCreate();
+        textToSpeechUtil = new TextToSpeechUtil(this);
+        speechRecognizeUtil = new SpeechRecognizeUtil(this);
+        speechRecognizeUtil.setOnTextGetFromRecordListener(this);
         bubbleNotification = new BubbleNotification(this, MainActivity.class, null);
         windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
-        initFlowerButton();
+        initCustomButton();
         initFloatWindow();
     }
 
@@ -47,9 +63,10 @@ public class BubbleService extends Service implements FlowerButton.OnMainButtonS
     /***
      * FlowerButton初始設定
      */
-    private void initFlowerButton() {
-        flowerButton = new FlowerButton(getApplicationContext());
-        flowerButton.setOnMainButtonSwipeListener(this);
+    private void initCustomButton() {
+        customButton = new CustomButton(getApplicationContext());
+        customButton.setOnMainButtonSwipeListener(this);
+        customButton.setOnMainButtonLongClickListener(this);
     }
     //----------
 
@@ -87,7 +104,7 @@ public class BubbleService extends Service implements FlowerButton.OnMainButtonS
                 case BubbleNotification.VALUE_START:
                     if (!isAdded) {
                         isAdded = true;
-                        windowManager.addView(flowerButton, params);
+                        windowManager.addView(customButton, params);
                     }
                     bubbleNotification.displayNotification(R.drawable.ic_bot);
                     break;
@@ -100,21 +117,46 @@ public class BubbleService extends Service implements FlowerButton.OnMainButtonS
     @Override
     public void onDestroy() {
         super.onDestroy();
+        speechRecognizeUtil.removeRecognizer();
         bubbleNotification.removeNotification();
-        if (flowerButton.getParent() != null) {
-            windowManager.removeView(flowerButton);//移除窗口
+        textToSpeechUtil.shutDown();
+        //移除窗口
+        if (customButton.getParent() != null) {
+            windowManager.removeView(customButton);
         }
     }
+
     //----------
 
     /***
-     * 當主紐被拖拉
+     * 當被拖拉
      */
     @Override
     public void onMainButtonSwipe(int x, int y) {
-
         params.x = x;
         params.y = y;
-        windowManager.updateViewLayout(flowerButton, params);
+        windowManager.updateViewLayout(customButton, params);
+    }
+
+    //------------
+
+    /***
+     * 當長按 開啟語音辨識
+     */
+    @Override
+    public void onMainButtonLongClicked() {
+        speechRecognizeUtil.startListen();
+        Toast.makeText(this, getString(R.string.toast_listen), Toast.LENGTH_SHORT).show();
+    }
+
+    //------------
+
+    /***
+     * 當 語音轉文字 取得
+     * @param results
+     */
+    @Override
+    public void onTextGetFromRecord(ArrayList<String> results) {
+        textToSpeechUtil.speak(results.get(0));
     }
 }
