@@ -105,8 +105,8 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
                     if (!isAdded) {
                         isAdded = true;
                         windowManager.addView(customButton, params);
+                        bubbleNotification.displayNotification(R.drawable.ic_bot);
                     }
-                    bubbleNotification.displayNotification(R.drawable.ic_bot);
                     break;
             }
         }

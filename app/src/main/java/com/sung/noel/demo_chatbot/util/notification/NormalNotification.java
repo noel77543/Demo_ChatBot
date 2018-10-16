@@ -31,10 +31,7 @@ public class NormalNotification extends Notification {
     private Notification notification;
 
     private Context context;
-    // 開啟另一個Activity的Intent
-    private Intent intent;
     private PendingIntent pendingIntent;
-    private int flags;
     private NotificationManager notificationManager;
     private NotificationChannel notificationChannel;
     private Uri defaultSoundUri;
@@ -42,27 +39,24 @@ public class NormalNotification extends Notification {
 
     //-----------
 
-    public NormalNotification(Context context, Intent intent) {
+    public NormalNotification(Context context) {
         this.context = context;
-        this.intent = intent;
         init();
     }
 
     //----------
     private void init() {
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        flags = PendingIntent.FLAG_CANCEL_CURRENT;
-
-
         notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
-        pendingIntent = PendingIntent.getActivity(context, NOTIFICATION_ID, intent, flags);
         defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
     }
 
     //----------------
 
-    public void displayNotification() {
+    public void displayNotification(Intent intent,String message) {
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        pendingIntent = PendingIntent.getActivity(context, NOTIFICATION_ID, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             notificationChannel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
@@ -77,7 +71,7 @@ public class NormalNotification extends Notification {
                     .setSound(defaultSoundUri)
                     //點了之後自動消失
                     .setAutoCancel(true)
-                    .setContentText( String.format(context.getString(R.string.permission_message), context.getString(R.string.app_name)))
+                    .setContentText(message)
                     .setContentIntent(pendingIntent);
 
             notification = notificationBuilder.build();
@@ -92,7 +86,7 @@ public class NormalNotification extends Notification {
                     .setSound(defaultSoundUri)
                     //點了之後自動消失
                     .setAutoCancel(true)
-                    .setContentText( String.format(context.getString(R.string.permission_message), context.getString(R.string.app_name)))
+                    .setContentText(message)
                     .setContentIntent(pendingIntent);
 
             notification = notificationCompatBuilder.build();
