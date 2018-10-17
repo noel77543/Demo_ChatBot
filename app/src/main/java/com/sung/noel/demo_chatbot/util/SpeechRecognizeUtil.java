@@ -12,7 +12,10 @@ import com.sung.noel.demo_chatbot.R;
 
 import java.util.ArrayList;
 
-public class SpeechRecognizeUtil implements RecognitionListener {
+import ai.api.AIListener;
+import ai.api.android.AIConfiguration;
+
+public class SpeechRecognizeUtil implements RecognitionListener,AIListener {
     private SpeechRecognizer speechRecognizer;
     private OnTextGetFromRecordListener onTextGetFromRecordListener;
     private Context context;
@@ -21,6 +24,12 @@ public class SpeechRecognizeUtil implements RecognitionListener {
         this.context = context;
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context);
         speechRecognizer.setRecognitionListener(this);
+
+
+
+
+
+
     }
 
     //--------------------
@@ -92,15 +101,6 @@ public class SpeechRecognizeUtil implements RecognitionListener {
         }
     }
 
-    @Override
-    public void onPartialResults(Bundle bundle) {
-
-    }
-
-    @Override
-    public void onEvent(int i, Bundle bundle) {
-
-    }
     //--------------------
 
     public interface OnTextGetFromRecordListener {
@@ -110,4 +110,58 @@ public class SpeechRecognizeUtil implements RecognitionListener {
     public void setOnTextGetFromRecordListener(OnTextGetFromRecordListener onTextGetFromRecordListener) {
         this.onTextGetFromRecordListener = onTextGetFromRecordListener;
     }
+
+
+    //-----------------
+
+
+
+
+
+    @Override
+    public void onPartialResults(Bundle bundle) {
+
+    }
+
+    @Override
+    public void onEvent(int i, Bundle bundle) {
+
+    }
+
+    @Override
+    public void onResult(ai.api.model.AIResponse result) {
+
+    }
+
+    @Override
+    public void onError(ai.api.model.AIError error) {
+
+    }
+
+    @Override
+    public void onAudioLevel(float level) {
+
+    }
+
+    @Override
+    public void onListeningStarted() {
+
+    }
+
+    @Override
+    public void onListeningCanceled() {
+
+    }
+
+    @Override
+    public void onListeningFinished() {
+
+    }
+
+
+
+
+
+
+
 }

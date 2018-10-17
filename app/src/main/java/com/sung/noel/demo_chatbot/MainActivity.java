@@ -27,6 +27,7 @@ import permissions.dispatcher.RuntimePermissions;
 @RuntimePermissions
 public class MainActivity extends AppCompatActivity {
 
+
     private Intent intent;
     private NormalNotification normalNotification;
 
