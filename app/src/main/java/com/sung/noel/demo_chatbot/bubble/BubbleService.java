@@ -53,7 +53,7 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
         speechRecognizeUtil = new SpeechRecognizeUtil(this);
         speechRecognizeUtil.setOnTextGetFromRecordListener(this);
         bubbleNotification = new BubbleNotification(this, MainActivity.class, null);
-        windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+        windowManager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
         initCustomButton();
         initFloatWindow();
     }
@@ -124,6 +124,7 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
         //移除窗口
         if (customButton.getParent() != null) {
             windowManager.removeView(customButton);
+            isAdded=false;
         }
     }
 

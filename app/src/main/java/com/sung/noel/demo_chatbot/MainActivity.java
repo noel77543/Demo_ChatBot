@@ -2,6 +2,7 @@ package com.sung.noel.demo_chatbot;
 
 import android.Manifest;
 import android.app.ActivityManager;
+import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -10,6 +11,7 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.sung.noel.demo_chatbot.bubble.BubbleService;
 import com.sung.noel.demo_chatbot.util.notification.BubbleNotification;
@@ -36,11 +38,17 @@ public class MainActivity extends AppCompatActivity {
         //service未啓動
         if (!isServiceRunning(BubbleService.class)) {
 
-            //目標版本號23以上 且 //不具備顯示於其他應用上層之權限
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
-                normalNotification.displayNotification(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName())), getString(R.string.notification_permission_draw));
+            //不具備顯示於其他應用上層之權限
+            if (!isAllowedOverlays()) {
+                String action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS;
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                    action = Settings.ACTION_MANAGE_OVERLAY_PERMISSION;
+                }
+                normalNotification.displayNotification(new Intent(action, Uri.parse("package:" + getPackageName())), getString(R.string.notification_permission_draw));
                 finish();
-            } else {
+            }
+            //進行語音權限索取
+            else {
                 MainActivityPermissionsDispatcher.onAllowedRecordWithCheck(this);
             }
         }
@@ -51,6 +59,33 @@ public class MainActivity extends AppCompatActivity {
             startService(intent);
             finish();
         }
+    }
+    //------------
+
+    /***
+     * 在其他應用上繪圖是否開啓
+     * @return
+     */
+    private boolean isAllowedOverlays() {
+        //5.0開始具備在window層繪圖功能 且預設為開啓
+        boolean isAllowed = true;
+
+        //8.0判斷方式改變
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            AppOpsManager appOpsMgr = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
+            if (appOpsMgr == null){
+                isAllowed = false;
+            }else {
+                //"android:system_alert_window"
+                int mode = appOpsMgr.checkOpNoThrow(AppOpsManager.OPSTR_SYSTEM_ALERT_WINDOW, android.os.Process.myUid(),getPackageName());
+                isAllowed =  mode == AppOpsManager.MODE_ALLOWED || mode == AppOpsManager.MODE_IGNORED;
+            }
+        }
+        //6.0改為 預設未開啟
+       else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            isAllowed = Settings.canDrawOverlays(this);
+        }
+        return isAllowed;
     }
 
 
