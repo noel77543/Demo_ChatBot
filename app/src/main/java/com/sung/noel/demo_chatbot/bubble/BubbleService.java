@@ -5,29 +5,22 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.IBinder;
-import android.speech.RecognitionListener;
-import android.speech.RecognizerIntent;
-import android.speech.SpeechRecognizer;
-import android.speech.tts.TextToSpeech;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.sung.noel.demo_chatbot.MainActivity;
 import com.sung.noel.demo_chatbot.R;
-import com.sung.noel.demo_chatbot.util.SpeechRecognizeUtil;
+import com.sung.noel.demo_chatbot.util.AIRecognizeUtil;
 import com.sung.noel.demo_chatbot.util.TextToSpeechUtil;
 import com.sung.noel.demo_chatbot.util.notification.BubbleNotification;
 import com.sung.noel.demo_chatbot.util.view.CustomButton;
 
 import java.util.ArrayList;
-import java.util.List;
 
 
-public class BubbleService extends Service implements CustomButton.OnMainButtonSwipeListener, CustomButton.OnMainButtonLongClickListener, SpeechRecognizeUtil.OnTextGetFromRecordListener {
+public class BubbleService extends Service implements CustomButton.OnMainButtonSwipeListener, CustomButton.OnMainButtonLongClickListener, AIRecognizeUtil.OnTextGetFromRecordListener {
     private final int _VIEW_SIZE = 150;
 
     private WindowManager windowManager;
@@ -35,7 +28,7 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
     private WindowManager.LayoutParams params;
     private boolean isAdded = false;
     private CustomButton customButton;
-    private SpeechRecognizeUtil speechRecognizeUtil;
+    private AIRecognizeUtil AIRecognizeUtil;
     private TextToSpeechUtil textToSpeechUtil;
 
     @Nullable
@@ -50,8 +43,8 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
     public void onCreate() {
         super.onCreate();
         textToSpeechUtil = new TextToSpeechUtil(this);
-        speechRecognizeUtil = new SpeechRecognizeUtil(this);
-        speechRecognizeUtil.setOnTextGetFromRecordListener(this);
+        AIRecognizeUtil = new AIRecognizeUtil(this);
+        AIRecognizeUtil.setOnTextGetFromRecordListener(this);
         bubbleNotification = new BubbleNotification(this, MainActivity.class, null);
         windowManager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
         initCustomButton();
@@ -110,7 +103,6 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
                     break;
             }
         }
-//        return super.onStartCommand(intent, flags, startId);
         return START_STICKY;
     }
     //----------
@@ -118,7 +110,6 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
     @Override
     public void onDestroy() {
         super.onDestroy();
-        speechRecognizeUtil.removeRecognizer();
         bubbleNotification.removeNotification();
         textToSpeechUtil.shutDown();
         //移除窗口
@@ -147,7 +138,7 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
      */
     @Override
     public void onMainButtonLongClicked() {
-        speechRecognizeUtil.startListen();
+        AIRecognizeUtil.startListen();
         Toast.makeText(this, getString(R.string.toast_listen), Toast.LENGTH_SHORT).show();
     }
 
@@ -158,7 +149,7 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
      * @param results
      */
     @Override
-    public void onTextGetFromRecord(ArrayList<String> results) {
-        textToSpeechUtil.speak(results.get(0));
+    public void onTextGetFromRecord(String results) {
+        textToSpeechUtil.speak(results);
     }
 }
