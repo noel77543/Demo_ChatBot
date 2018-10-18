@@ -12,7 +12,7 @@ public class TextToSpeechUtil implements TextToSpeech.OnInitListener {
     private TextToSpeech textToSpeech;
     private Context context;
     //音調
-    private final float PITCH = 1.2f;
+    private final float PITCH = 1.3f;
     //語速
     private final float RATE = 1.3f;
 

@@ -23,9 +23,7 @@ import com.sung.noel.demo_chatbot.util.LayoutSizeUtil;
  */
 
 public class CustomButton extends FrameLayout implements Runnable, View.OnClickListener, View.OnTouchListener, View.OnLongClickListener {
-    private final int strokeWidth = 3;
-    private final int strokeColor = Color.BLACK;
-    private final int fillColor = Color.WHITE;
+
     //當手指抬起  經過自訂時間後 縮小
     private final int _DELAY_SCALE = 1000;
 
@@ -96,10 +94,18 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
     //-------
 
     private GradientDrawable getShape() {
+        int centerColor = Color.WHITE;
+        int startColor = Color.WHITE;
+        int endColor= Color.BLACK;
+        int strokeWidth = 3;
+        int strokeColor = Color.BLACK;
+
         GradientDrawable gradientDrawable = new GradientDrawable();
         gradientDrawable.setShape(GradientDrawable.OVAL);
-        gradientDrawable.setColor(fillColor);
         gradientDrawable.setStroke(strokeWidth, strokeColor);
+        gradientDrawable.setGradientType(GradientDrawable.RADIAL_GRADIENT);
+        gradientDrawable.setGradientRadius(50);
+        gradientDrawable.setColors(new int[]{centerColor,startColor,endColor});
         return gradientDrawable;
     }
     //-------

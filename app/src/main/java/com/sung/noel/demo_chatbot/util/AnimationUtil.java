@@ -6,7 +6,7 @@ public class AnimationUtil {
 
     private final int _DURATION = 1000;
     private final float _SCALE_SIZE = 0.6f;
-    private final float _SCALE_ALPHA = 0.2f;
+    private final float _ALPHA = 0.5f;
 
     public AnimationUtil() {
 
@@ -19,7 +19,7 @@ public class AnimationUtil {
     public void hide(View view) {
         view
                 .animate()
-                .alpha(_SCALE_ALPHA)
+                .alpha(_ALPHA)
                 .scaleY(_SCALE_SIZE)
                 .scaleX(_SCALE_SIZE)
                 .setDuration(_DURATION)
