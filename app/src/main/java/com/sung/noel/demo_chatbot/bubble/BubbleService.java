@@ -3,6 +3,7 @@ package com.sung.noel.demo_chatbot.bubble;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.IBinder;
@@ -49,6 +50,19 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
         windowManager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
         initCustomButton();
         initFloatWindow();
+    }
+    //----------
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        //垂直
+        if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            customButton.setOrientationChanged(false);
+        }
+        //水平
+        else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            customButton.setOrientationChanged(true);
+        }
     }
 
     //----------

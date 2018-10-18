@@ -49,7 +49,7 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
     private boolean isSwiping = false;
     private int lastX;
     private int lastY;
-
+    private boolean isLanscape = false;
     //----------
 
     public CustomButton(@NonNull Context context) {
@@ -96,7 +96,7 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
     private GradientDrawable getShape() {
         int centerColor = Color.WHITE;
         int startColor = Color.WHITE;
-        int endColor= Color.BLACK;
+        int endColor = Color.BLACK;
         int strokeWidth = 3;
         int strokeColor = Color.BLACK;
 
@@ -105,7 +105,7 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
         gradientDrawable.setStroke(strokeWidth, strokeColor);
         gradientDrawable.setGradientType(GradientDrawable.RADIAL_GRADIENT);
         gradientDrawable.setGradientRadius(50);
-        gradientDrawable.setColors(new int[]{centerColor,startColor,endColor});
+        gradientDrawable.setColors(new int[]{centerColor, startColor, endColor});
         return gradientDrawable;
     }
     //-------
@@ -146,8 +146,20 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
                     // TODO   WindowManager的(0,0)起始點是定位於螢幕中心
                     // TODO   所以X座標需要減少手機寬的1/2 後再減少球的寬度的1/2   同理Y座標需要減少手機高的1/2後再減少球的高度的1/2
 
-                    int centerX = x - (phoneWidth / 2) - (getWidth() / 2);
-                    int centerY = y - (phoneHeight / 2) - (getHeight() / 2);
+                    int centerX;
+                    int centerY;
+                    //重直時
+                    if(!isLanscape){
+                        centerX = x - (phoneWidth / 2) - (getWidth() / 2);
+                        centerY = y - (phoneHeight / 2) - (getHeight() / 2);
+                    }
+                    //水平時
+                    else {
+                        centerX = x - (phoneHeight / 2) - (getHeight() / 2);
+                        centerY = y - (phoneWidth / 2) - (getWidth() / 2);
+                    }
+
+
                     onMainButtonSwipeListener.onMainButtonSwipe(centerX, centerY);
                     if (Math.abs(lastX - x) > 15 || Math.abs(lastY - y) > 15) {
                         isSwiping = true;
@@ -162,6 +174,16 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
         }
         return false;
     }
+    //----------
+
+    /***
+     * 垂直　／　水平　位置的判斷有相反的處理
+     * @param isLanscape
+     */
+    public void setOrientationChanged(boolean isLanscape) {
+        this.isLanscape = isLanscape;
+    }
+
 
     //----------
 
