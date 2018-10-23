@@ -13,15 +13,14 @@ import android.widget.Toast;
 
 import com.sung.noel.demo_chatbot.MainActivity;
 import com.sung.noel.demo_chatbot.R;
-import com.sung.noel.demo_chatbot.util.AIRecognizeUtil;
-import com.sung.noel.demo_chatbot.util.TextToSpeechUtil;
+import com.sung.noel.demo_chatbot.util.ai.AIRecognizeUtil;
+import com.sung.noel.demo_chatbot.util.LayoutSizeUtil;
+import com.sung.noel.demo_chatbot.util.ai.TextToSpeechUtil;
 import com.sung.noel.demo_chatbot.util.notification.BubbleNotification;
 import com.sung.noel.demo_chatbot.util.view.CustomButton;
 
-import java.util.ArrayList;
 
-
-public class BubbleService extends Service implements CustomButton.OnMainButtonSwipeListener, CustomButton.OnMainButtonLongClickListener, AIRecognizeUtil.OnTextGetFromRecordListener {
+public class BubbleService extends Service implements CustomButton.OnMainButtonSwipeListener, CustomButton.OnMainButtonLongClickListener, AIRecognizeUtil.OnTextGetFromRecordListener, CustomButton.OnMainButtonClickListener {
     private final int _VIEW_SIZE = 150;
 
     private WindowManager windowManager;
@@ -31,6 +30,14 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
     private CustomButton customButton;
     private AIRecognizeUtil AIRecognizeUtil;
     private TextToSpeechUtil textToSpeechUtil;
+
+    private LayoutSizeUtil layoutSizeUtil;
+    private int phoneHeight;
+    private int phoneWidth;
+
+    //保留彈出視窗 出現前的座標
+    private int lastX;
+    private int lastY;
 
     @Nullable
     @Override
@@ -48,6 +55,11 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
         AIRecognizeUtil.setOnTextGetFromRecordListener(this);
         bubbleNotification = new BubbleNotification(this, MainActivity.class, null);
         windowManager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+        layoutSizeUtil = new LayoutSizeUtil(this);
+        int[] phoneSize = layoutSizeUtil.getPhoneSize();
+        phoneWidth = phoneSize[0];
+        phoneHeight = phoneSize[1];
+
         initCustomButton();
         initFloatWindow();
     }
@@ -74,6 +86,7 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
         customButton = new CustomButton(getApplicationContext());
         customButton.setOnMainButtonSwipeListener(this);
         customButton.setOnMainButtonLongClickListener(this);
+        customButton.setOnMainButtonClickListener(this);
     }
     //----------
 
@@ -90,7 +103,7 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
         params.width = _VIEW_SIZE;
         params.height = _VIEW_SIZE;
 
-        //起始點偏移量  中心點為(0,0)
+        //起始點  (0,0)為螢幕正中心點
         params.x = 0;
         params.y = 0;
     }
@@ -129,7 +142,7 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
         //移除窗口
         if (customButton.getParent() != null) {
             windowManager.removeView(customButton);
-            isAdded=false;
+            isAdded = false;
         }
     }
 
@@ -155,6 +168,22 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
         AIRecognizeUtil.startListen();
         Toast.makeText(this, getString(R.string.toast_listen), Toast.LENGTH_SHORT).show();
     }
+    //------------
+
+    /***
+     * 當點擊 顯示聊天記錄 及 需求字串手動輸入
+     */
+    @Override
+    public void onMainButtonCLicked() {
+//        lastX = params.x;
+//        lastY = params.y;
+//
+//        params.x = 0;
+//        params.y =0 ;
+//        params.width = (int) (phoneWidth * 0.85);
+//        params.height = (int) (phoneHeight * 0.85);
+//        windowManager.updateViewLayout(customButton, params);
+    }
 
     //------------
 
@@ -166,4 +195,18 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
     public void onTextGetFromRecord(String results) {
         textToSpeechUtil.speak(results);
     }
+
+//    //-------------
+//
+//    /***
+//     * 當聊天對話窗消失
+//     */
+//    @Override
+//    public void onDismiss() {
+//        params.x = lastX;
+//        params.y = lastY;
+//        params.width = _VIEW_SIZE;
+//        params.height = _VIEW_SIZE;
+//        windowManager.updateViewLayout(customButton, params);
+//    }
 }

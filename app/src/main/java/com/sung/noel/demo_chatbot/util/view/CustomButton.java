@@ -49,7 +49,8 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
     private boolean isSwiping = false;
     private int lastX;
     private int lastY;
-    private boolean isLanscape = false;
+    private boolean isLandscape = false;
+
     //----------
 
     public CustomButton(@NonNull Context context) {
@@ -149,7 +150,7 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
                     int centerX;
                     int centerY;
                     //重直時
-                    if(!isLanscape){
+                    if (!isLandscape) {
                         centerX = x - (phoneWidth / 2) - (getWidth() / 2);
                         centerY = y - (phoneHeight / 2) - (getHeight() / 2);
                     }
@@ -169,8 +170,12 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
             case MotionEvent.ACTION_UP:
                 isSwiping = false;
                 handler.postDelayed(runnable, _DELAY_SCALE);
-                break;
 
+                //如果位移量超過15px  則return true 不讓事件到下層的onClickListener
+                if (Math.abs(lastX - x) > 15 || Math.abs(lastY - y) > 15) {
+                    return true;
+                }
+                break;
         }
         return false;
     }
@@ -178,10 +183,10 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
 
     /***
      * 垂直　／　水平　位置的判斷有相反的處理
-     * @param isLanscape
+     * @param isLandscape
      */
-    public void setOrientationChanged(boolean isLanscape) {
-        this.isLanscape = isLanscape;
+    public void setOrientationChanged(boolean isLandscape) {
+        this.isLandscape = isLandscape;
     }
 
 
@@ -193,6 +198,8 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
         if (onMainButtonClickListener != null) {
             onMainButtonClickListener.onMainButtonCLicked();
         }
+
+
     }
     //--------
 
