@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.sung.noel.demo_chatbot.MainActivity;
 import com.sung.noel.demo_chatbot.R;
+import com.sung.noel.demo_chatbot.util.ai.AIActionUtil;
 import com.sung.noel.demo_chatbot.util.ai.AIRecognizeUtil;
 import com.sung.noel.demo_chatbot.util.LayoutSizeUtil;
 import com.sung.noel.demo_chatbot.util.ai.TextToSpeechUtil;
@@ -20,7 +21,7 @@ import com.sung.noel.demo_chatbot.util.notification.BubbleNotification;
 import com.sung.noel.demo_chatbot.util.view.CustomButton;
 
 
-public class BubbleService extends Service implements CustomButton.OnMainButtonSwipeListener, CustomButton.OnMainButtonLongClickListener, AIRecognizeUtil.OnTextGetFromRecordListener, CustomButton.OnMainButtonClickListener {
+public class BubbleService extends Service implements CustomButton.OnMainButtonSwipeListener, CustomButton.OnMainButtonLongClickListener, AIRecognizeUtil.OnTextGetFromRecordListener, CustomButton.OnMainButtonClickListener, com.sung.noel.demo_chatbot.util.ai.AIRecognizeUtil.OnConnectToDialogflowStateChangeListener {
     private final int _VIEW_SIZE = 150;
 
     private WindowManager windowManager;
@@ -52,6 +53,7 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
         super.onCreate();
         textToSpeechUtil = new TextToSpeechUtil(this);
         AIRecognizeUtil = new AIRecognizeUtil(this);
+        AIRecognizeUtil.setOnConnectToDialogflowStateChangeListener(this);
         AIRecognizeUtil.setOnTextGetFromRecordListener(this);
         bubbleNotification = new BubbleNotification(this, MainActivity.class, null);
         windowManager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
@@ -175,14 +177,7 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
      */
     @Override
     public void onMainButtonCLicked() {
-//        lastX = params.x;
-//        lastY = params.y;
-//
-//        params.x = 0;
-//        params.y =0 ;
-//        params.width = (int) (phoneWidth * 0.85);
-//        params.height = (int) (phoneHeight * 0.85);
-//        windowManager.updateViewLayout(customButton, params);
+
     }
 
     //------------
@@ -195,18 +190,25 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
     public void onTextGetFromRecord(String results) {
         textToSpeechUtil.speak(results);
     }
+    //------------
 
-//    //-------------
-//
-//    /***
-//     * 當聊天對話窗消失
-//     */
-//    @Override
-//    public void onDismiss() {
-//        params.x = lastX;
-//        params.y = lastY;
-//        params.width = _VIEW_SIZE;
-//        params.height = _VIEW_SIZE;
-//        windowManager.updateViewLayout(customButton, params);
-//    }
+    /***
+     *  當連線至dialogflow的狀態改變
+     * @param state
+     */
+    @Override
+    public void onConnectToDialogflowStateChanged(int state) {
+        switch (state) {
+            case AIActionUtil._STATE_PREPARE:
+
+                break;
+            case AIActionUtil._STATE_CONNECTING:
+
+                break;
+            case AIActionUtil._STATE_CONNECTED:
+
+                break;
+        }
+    }
+
 }

@@ -16,6 +16,8 @@ import ai.api.model.Result;
 public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConnectToDialogflowListener {
 
 
+
+    private OnConnectToDialogflowStateChangeListener onConnectToDialogflowStateChangeListener;
     private OnTextGetFromRecordListener onTextGetFromRecordListener;
     private Context context;
     private SpeechRecognizer speechRecognizer;
@@ -105,7 +107,7 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
 
     @Override
     public void onStartToConnectDialogflow() {
-
+        onConnectToDialogflowStateChangeListener.onConnectToDialogflowStateChanged(AIActionUtil._STATE_PREPARE);
     }
     //--------------------
 
@@ -114,6 +116,7 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
      */
     @Override
     public void onConnectingDialogflow() {
+        onConnectToDialogflowStateChangeListener.onConnectToDialogflowStateChanged(AIActionUtil._STATE_CONNECTING);
 
     }
     //--------------------
@@ -123,6 +126,8 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
      */
     @Override
     public void onRespondFromDialogflow(AIResponse aiResponse) {
+        onConnectToDialogflowStateChangeListener.onConnectToDialogflowStateChanged(AIActionUtil._STATE_CONNECTED);
+
         Result result = aiResponse.getResult();
 //        // Get parameters
 //        String parameterString = "";
@@ -155,6 +160,15 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
 
     public void setOnTextGetFromRecordListener(OnTextGetFromRecordListener onTextGetFromRecordListener) {
         this.onTextGetFromRecordListener = onTextGetFromRecordListener;
+    }
+    //-------------------------
+
+    public interface OnConnectToDialogflowStateChangeListener {
+        void onConnectToDialogflowStateChanged(@AIActionUtil.DialogflowState int state );
+    }
+
+    public void setOnConnectToDialogflowStateChangeListener(OnConnectToDialogflowStateChangeListener onConnectToDialogflowStateChangeListener) {
+        this.onConnectToDialogflowStateChangeListener = onConnectToDialogflowStateChangeListener;
     }
 
 }
