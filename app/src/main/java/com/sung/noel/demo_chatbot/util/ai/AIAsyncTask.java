@@ -34,7 +34,7 @@ public class AIAsyncTask extends AsyncTask<AIRequest, Void, AIResponse> {
     protected AIResponse doInBackground(AIRequest... aiRequests) {
         onConnectToDialogflowListener.onConnectingDialogflow();
         try {
-            return  aiDataService.request(aiRequest);
+            return aiDataService.request(aiRequest);
         } catch (AIServiceException e) {
             e.printStackTrace();
         }
@@ -55,8 +55,9 @@ public class AIAsyncTask extends AsyncTask<AIRequest, Void, AIResponse> {
      * 將語音文字帶入
      * @param queryText
      */
-    public void setQuery(String queryText) {
+    public AIAsyncTask setQuery(String queryText) {
         aiRequest.setQuery(queryText);
+        return this;
     }
 
 
@@ -70,7 +71,8 @@ public class AIAsyncTask extends AsyncTask<AIRequest, Void, AIResponse> {
         void onRespondFromDialogflow(AIResponse aiResponse);
     }
 
-    public void setOnConnectToDialogflowListener(OnConnectToDialogflowListener onConnectToDialogflowListener) {
+    public AIAsyncTask setOnConnectToDialogflowListener(OnConnectToDialogflowListener onConnectToDialogflowListener) {
         this.onConnectToDialogflowListener = onConnectToDialogflowListener;
+        return this;
     }
 }

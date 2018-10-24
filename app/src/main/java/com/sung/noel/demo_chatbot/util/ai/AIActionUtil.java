@@ -1,10 +1,15 @@
 package com.sung.noel.demo_chatbot.util.ai;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.IntDef;
 import android.support.annotation.StringDef;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.net.URLEncoder;
 
 public class AIActionUtil {
     @Retention(RetentionPolicy.SOURCE)
@@ -19,7 +24,7 @@ public class AIActionUtil {
 
 
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({_STATE_PREPARE,_STATE_CONNECTING,_STATE_CONNECTED})
+    @IntDef({_STATE_PREPARE, _STATE_CONNECTING, _STATE_CONNECTED})
     public @interface DialogflowState {
     }
 
@@ -30,8 +35,26 @@ public class AIActionUtil {
     //完成 並接收回覆
     public static final int _STATE_CONNECTED = 13;
 
+    private Context context;
 
+    public AIActionUtil(Context context) {
+        this.context = context;
+    }
     //---------------------
 
+    /***
+     * 開啟瀏覽器 搜尋關鍵字
+     */
+    public void searchOnBrowser(String text) {
+        try {
+            String escapedQuery = URLEncoder.encode(text, "UTF-8");
+            Uri uri = Uri.parse("http://www.google.com/#q=" + escapedQuery);
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            context.startActivity(intent);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
 
+        }
+
+    }
 }

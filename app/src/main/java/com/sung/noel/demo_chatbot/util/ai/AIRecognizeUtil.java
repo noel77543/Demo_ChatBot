@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.sung.noel.demo_chatbot.R;
@@ -16,19 +17,22 @@ import ai.api.model.Result;
 public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConnectToDialogflowListener {
 
 
-
     private OnConnectToDialogflowStateChangeListener onConnectToDialogflowStateChangeListener;
     private OnTextGetFromRecordListener onTextGetFromRecordListener;
+
+    private AIActionUtil aiActionUtil;
     private Context context;
     private SpeechRecognizer speechRecognizer;
     private AIAsyncTask aiAsyncTask;
+    //是否正在聆聽
+    private boolean isListen = false;
+
 
     public AIRecognizeUtil(Context context) {
         this.context = context;
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context);
         speechRecognizer.setRecognitionListener(this);
-        aiAsyncTask = new AIAsyncTask(context);
-        aiAsyncTask.setOnConnectToDialogflowListener(this);
+        aiActionUtil = new AIActionUtil(context);
     }
 
     //-------------
@@ -37,34 +41,36 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
      * 開始聆聽
      */
     public void startListen() {
-        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        speechRecognizer.startListening(intent);
+        if (!isListen) {
+            Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+            speechRecognizer.startListening(intent);
+        } else {
+            Toast.makeText(context, context.getString(R.string.toast_speech_listening), Toast.LENGTH_SHORT).show();
+        }
     }
+    //-------------
 
     @Override
     public void onReadyForSpeech(Bundle bundle) {
-
+        isListen = true;
     }
 
     @Override
     public void onBeginningOfSpeech() {
-
     }
 
     @Override
     public void onRmsChanged(float v) {
-
     }
 
     @Override
     public void onBufferReceived(byte[] bytes) {
-
     }
 
     @Override
     public void onEndOfSpeech() {
-
+        isListen = false;
     }
     //--------------------
 
@@ -86,8 +92,7 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
     @Override
     public void onResults(Bundle bundle) {
         String text = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).get(0);
-        aiAsyncTask.setQuery(text);
-        aiAsyncTask.execute();
+        new AIAsyncTask(context).setOnConnectToDialogflowListener(this).setQuery(text).execute();
     }
 
     @Override
@@ -142,6 +147,7 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
         switch (event) {
             //查詢
             case AIActionUtil._EVENT_SEARCH:
+                aiActionUtil.searchOnBrowser(result.getResolvedQuery());
                 break;
             //播號
             case AIActionUtil._EVENT_CALL:
@@ -164,7 +170,7 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
     //-------------------------
 
     public interface OnConnectToDialogflowStateChangeListener {
-        void onConnectToDialogflowStateChanged(@AIActionUtil.DialogflowState int state );
+        void onConnectToDialogflowStateChanged(@AIActionUtil.DialogflowState int state);
     }
 
     public void setOnConnectToDialogflowStateChangeListener(OnConnectToDialogflowStateChangeListener onConnectToDialogflowStateChangeListener) {
