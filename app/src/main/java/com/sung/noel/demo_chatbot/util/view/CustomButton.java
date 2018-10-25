@@ -160,7 +160,6 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
                         centerY = y - (phoneWidth / 2) - (getWidth() / 2);
                     }
 
-
                     onMainButtonSwipeListener.onMainButtonSwipe(centerX, centerY);
                     if (Math.abs(lastX - x) > 15 || Math.abs(lastY - y) > 15) {
                         isSwiping = true;
@@ -196,10 +195,8 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
     @Override
     public void onClick(View v) {
         if (onMainButtonClickListener != null) {
-            onMainButtonClickListener.onMainButtonCLicked();
+            onMainButtonClickListener.onMainButtonClicked();
         }
-
-
     }
     //--------
 
@@ -212,63 +209,12 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
                 return true;
             }
         }
-
         return false;
     }
-    //--------
-
-    /***
-     * 主紐設置文字
-     */
-    public void setText(String text) {
-        mainButton.setText(text);
-    }
-
-    /***
-     * 主紐設置文字  子紐設置文字
-     */
-    public void setText(String text, String[] textArray) {
-        mainButton.setText(text);
-    }
-    //-----
-
-    /***
-     * 主紐設置文字顏色
-     */
-    public void setTextColor(int colorRes) {
-        mainButton.setTextColor(colorRes);
-    }
-    //--------
-
-    /***
-     * 主紐設置顏色
-     */
-    public void setBackgroundColor(int colorRes) {
-        mainButton.setBackgroundColor(colorRes);
-    }
-
-    //--------
-
-    /***
-     * 主紐設置背景 for drawable
-     */
-    public void setBackground(Drawable drawable) {
-        mainButton.setBackground(drawable);
-    }
-
-    //-----
-
-    /***
-     * 主紐設置背景 for resource
-     */
-    public void setBackgroundResource(int imgRes) {
-        mainButton.setBackgroundResource(imgRes);
-    }
-
 
     //-------
     public interface OnMainButtonClickListener {
-        void onMainButtonCLicked();
+        void onMainButtonClicked();
     }
 
     public void setOnMainButtonClickListener(OnMainButtonClickListener onMainButtonClickListener) {

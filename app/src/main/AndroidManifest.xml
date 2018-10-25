@@ -23,7 +23,7 @@
         </activity>
 
 
-        <service android:name=".bubble.BubbleService"
+        <service android:name=".service.BubbleService"
             android:exported="true"/>
     </application>
 

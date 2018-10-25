@@ -1,4 +1,4 @@
-package com.sung.noel.demo_chatbot.bubble;
+package com.sung.noel.demo_chatbot.service;
 
 import android.app.Service;
 import android.content.Context;
@@ -33,12 +33,7 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
     private TextToSpeechUtil textToSpeechUtil;
 
     private LayoutSizeUtil layoutSizeUtil;
-    private int phoneHeight;
-    private int phoneWidth;
 
-    //保留彈出視窗 出現前的座標
-    private int lastX;
-    private int lastY;
 
     @Nullable
     @Override
@@ -58,9 +53,6 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
         bubbleNotification = new BubbleNotification(this, MainActivity.class, null);
         windowManager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
         layoutSizeUtil = new LayoutSizeUtil(this);
-        int[] phoneSize = layoutSizeUtil.getPhoneSize();
-        phoneWidth = phoneSize[0];
-        phoneHeight = phoneSize[1];
 
         initCustomButton();
         initFloatWindow();
@@ -173,10 +165,10 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
     //------------
 
     /***
-     * 當點擊 顯示聊天記錄 及 需求字串手動輸入
+     * 當點擊
      */
     @Override
-    public void onMainButtonCLicked() {
+    public void onMainButtonClicked() {
 
     }
 

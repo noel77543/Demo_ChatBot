@@ -16,7 +16,7 @@ import android.widget.RemoteViews;
 
 
 import com.sung.noel.demo_chatbot.R;
-import com.sung.noel.demo_chatbot.bubble.BubbleService;
+import com.sung.noel.demo_chatbot.service.BubbleService;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
 

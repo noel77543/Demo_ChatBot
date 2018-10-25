@@ -11,9 +11,8 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 
-import com.sung.noel.demo_chatbot.bubble.BubbleService;
+import com.sung.noel.demo_chatbot.service.BubbleService;
 import com.sung.noel.demo_chatbot.util.notification.BubbleNotification;
 import com.sung.noel.demo_chatbot.util.notification.NormalNotification;
 
