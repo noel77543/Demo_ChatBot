@@ -1,4 +1,4 @@
-package com.sung.noel.demo_chatbot.Talk.model;
+package com.sung.noel.demo_chatbot.util.window.talk.model;
 
 import android.support.annotation.IntDef;
 

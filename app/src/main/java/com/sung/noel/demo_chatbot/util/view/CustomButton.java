@@ -161,7 +161,8 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
                     }
 
                     onMainButtonSwipeListener.onMainButtonSwipe(centerX, centerY);
-                    if (Math.abs(lastX - x) > 15 || Math.abs(lastY - y) > 15) {
+                    //如果位移量超過10px  則
+                    if (Math.abs(lastX - x) > 10 || Math.abs(lastY - y) > 10) {
                         isSwiping = true;
                     }
                 }
@@ -170,11 +171,8 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
                 isSwiping = false;
                 handler.postDelayed(runnable, _DELAY_SCALE);
 
-                //如果位移量超過15px  則return true 不讓事件到下層的onClickListener
-                if (Math.abs(lastX - x) > 15 || Math.abs(lastY - y) > 15) {
-                    return true;
-                }
-                break;
+                //如果位移量超過10px  則return true 不讓事件到下層的onClickListener
+                return (Math.abs(lastX - x) > 10 || Math.abs(lastY - y) > 10);
         }
         return false;
     }

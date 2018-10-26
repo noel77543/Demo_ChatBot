@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.view.WindowManager;
+import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import com.sung.noel.demo_chatbot.MainActivity;
@@ -19,9 +20,10 @@ import com.sung.noel.demo_chatbot.util.LayoutSizeUtil;
 import com.sung.noel.demo_chatbot.util.ai.TextToSpeechUtil;
 import com.sung.noel.demo_chatbot.util.notification.BubbleNotification;
 import com.sung.noel.demo_chatbot.util.view.CustomButton;
+import com.sung.noel.demo_chatbot.util.window.talk.TalkPopupWindow;
 
 
-public class BubbleService extends Service implements CustomButton.OnMainButtonSwipeListener, CustomButton.OnMainButtonLongClickListener, AIRecognizeUtil.OnTextGetFromRecordListener, CustomButton.OnMainButtonClickListener, com.sung.noel.demo_chatbot.util.ai.AIRecognizeUtil.OnConnectToDialogflowStateChangeListener {
+public class BubbleService extends Service implements CustomButton.OnMainButtonSwipeListener, CustomButton.OnMainButtonLongClickListener, AIRecognizeUtil.OnTextGetFromRecordListener, CustomButton.OnMainButtonClickListener, com.sung.noel.demo_chatbot.util.ai.AIRecognizeUtil.OnConnectToDialogflowStateChangeListener, PopupWindow.OnDismissListener {
     private final int _VIEW_SIZE = 150;
 
     private WindowManager windowManager;
@@ -31,9 +33,7 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
     private CustomButton customButton;
     private AIRecognizeUtil AIRecognizeUtil;
     private TextToSpeechUtil textToSpeechUtil;
-
-    private LayoutSizeUtil layoutSizeUtil;
-
+    private TalkPopupWindow talkPopupWindow;
 
     @Nullable
     @Override
@@ -46,13 +46,15 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
     @Override
     public void onCreate() {
         super.onCreate();
+        talkPopupWindow = new TalkPopupWindow(this);
         textToSpeechUtil = new TextToSpeechUtil(this);
+        bubbleNotification = new BubbleNotification(this, MainActivity.class, null);
         AIRecognizeUtil = new AIRecognizeUtil(this);
+
+        talkPopupWindow.setOnDismissListener(this);
         AIRecognizeUtil.setOnConnectToDialogflowStateChangeListener(this);
         AIRecognizeUtil.setOnTextGetFromRecordListener(this);
-        bubbleNotification = new BubbleNotification(this, MainActivity.class, null);
         windowManager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
-        layoutSizeUtil = new LayoutSizeUtil(this);
 
         initCustomButton();
         initFloatWindow();
@@ -102,6 +104,15 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
         params.y = 0;
     }
 
+    //------------
+
+    /***
+     * 當對話紀錄window消失
+     */
+    @Override
+    public void onDismiss() {
+        
+    }
 
     //----------
 
@@ -155,21 +166,21 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
     //------------
 
     /***
-     * 當長按 開啟語音辨識
+     * 當長按  顯示記錄
      */
     @Override
     public void onMainButtonLongClicked() {
-        AIRecognizeUtil.startListen();
-        Toast.makeText(this, getString(R.string.toast_listen), Toast.LENGTH_SHORT).show();
+
     }
     //------------
 
     /***
-     * 當點擊
+     * 當點擊 開啟語音辨識
      */
     @Override
     public void onMainButtonClicked() {
-
+        AIRecognizeUtil.startListen();
+        Toast.makeText(this, getString(R.string.toast_listen), Toast.LENGTH_SHORT).show();
     }
 
     //------------
@@ -202,5 +213,4 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
                 break;
         }
     }
-
 }

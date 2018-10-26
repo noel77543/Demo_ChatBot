@@ -8,4 +8,9 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="talk_pop_animation" parent="android:Animation" >
+        <item name="android:windowEnterAnimation">@anim/anim_talk_pop_show</item>
+        <item name="android:windowExitAnimation">@anim/anim_talk_pop_dismiss</item>
+    </style>
+
 </resources>

@@ -1,10 +1,9 @@
-package com.sung.noel.demo_chatbot.Talk.adapter;
+package com.sung.noel.demo_chatbot.util.window.talk.adapter;
 
 import android.content.Context;
 import android.graphics.Paint;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,8 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.sung.noel.demo_chatbot.R;
-import com.sung.noel.demo_chatbot.Talk.model.Talk;
-import com.sung.noel.demo_chatbot.util.TimeUtil;
+import com.sung.noel.demo_chatbot.util.window.talk.model.Talk;
 
 import java.util.ArrayList;
 
