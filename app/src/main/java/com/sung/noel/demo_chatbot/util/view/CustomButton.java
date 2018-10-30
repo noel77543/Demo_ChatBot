@@ -38,9 +38,7 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
     private Button mainButton;
     private int mainButtonSize;
 
-
     private Context context;
-    private LayoutSizeUtil layoutSizeUtil;
     private int phoneHeight;
     private int phoneWidth;
     private AnimationUtil animationUtil;
@@ -50,21 +48,18 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
     private int lastX;
     private int lastY;
     private boolean isLandscape = false;
-
+    //觸發長按的時候
+    private boolean isLongClicked=false;
     //----------
 
-    public CustomButton(@NonNull Context context) {
+    public CustomButton(@NonNull Context context, int phoneHeight, int phoneWidth) {
         super(context);
         this.context = context;
+        this.phoneHeight = phoneHeight;
+        this.phoneWidth = phoneWidth;
         post(this);
     }
-    //----------
 
-    public CustomButton(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
-        this.context = context;
-        post(this);
-    }
     //----------
 
     @Override
@@ -76,7 +71,6 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
     private void init() {
         animationUtil = new AnimationUtil();
         mainButton = new Button(context);
-        layoutSizeUtil = new LayoutSizeUtil(context);
         handler = new Handler();
         runnable = new Runnable() {
             @Override
@@ -86,9 +80,6 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
         };
 
         mainButton.setBackground(getShape());
-        int[] phoneSize = layoutSizeUtil.getPhoneSize();
-        phoneHeight = phoneSize[1];
-        phoneWidth = phoneSize[0];
         handler.postDelayed(runnable, _DELAY_SCALE);
         addMainButton();
     }
@@ -159,8 +150,9 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
                         centerX = x - (phoneHeight / 2) - (getHeight() / 2);
                         centerY = y - (phoneWidth / 2) - (getWidth() / 2);
                     }
-
-                    onMainButtonSwipeListener.onMainButtonSwipe(centerX, centerY);
+                    if(!isLongClicked){
+                        onMainButtonSwipeListener.onMainButtonSwipe(centerX, centerY);
+                    }
                     //如果位移量超過10px  則
                     if (Math.abs(lastX - x) > 10 || Math.abs(lastY - y) > 10) {
                         isSwiping = true;
@@ -169,6 +161,7 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
                 break;
             case MotionEvent.ACTION_UP:
                 isSwiping = false;
+                isLongClicked = false;
                 handler.postDelayed(runnable, _DELAY_SCALE);
 
                 //如果位移量超過10px  則return true 不讓事件到下層的onClickListener
@@ -203,6 +196,7 @@ public class CustomButton extends FrameLayout implements Runnable, View.OnClickL
     public boolean onLongClick(View view) {
         if (onMainButtonLongClickListener != null) {
             if (!isSwiping) {
+                isLongClicked = true;
                 onMainButtonLongClickListener.onMainButtonLongClicked();
                 return true;
             }

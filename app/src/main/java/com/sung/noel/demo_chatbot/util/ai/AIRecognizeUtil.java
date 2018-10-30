@@ -23,9 +23,8 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
     private AIActionUtil aiActionUtil;
     private Context context;
     private SpeechRecognizer speechRecognizer;
-    private AIAsyncTask aiAsyncTask;
     //是否正在聆聽
-    private boolean isListen = false;
+    private boolean isListening = false;
 
 
     public AIRecognizeUtil(Context context) {
@@ -41,7 +40,7 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
      * 開始聆聽
      */
     public void startListen() {
-        if (!isListen) {
+        if (!isListening) {
             Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
             intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
             speechRecognizer.startListening(intent);
@@ -53,7 +52,7 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
 
     @Override
     public void onReadyForSpeech(Bundle bundle) {
-        isListen = true;
+        isListening = true;
     }
 
     @Override
@@ -70,7 +69,7 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
 
     @Override
     public void onEndOfSpeech() {
-        isListen = false;
+        isListening = false;
     }
     //--------------------
 
@@ -80,8 +79,8 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
      */
     @Override
     public void onError(int i) {
-        onTextGetFromRecordListener.onTextGetFromRecord(context.getString(R.string.toast_listen_error));
-        Toast.makeText(context, context.getString(R.string.toast_listen_error), Toast.LENGTH_SHORT).show();
+        new AIAsyncTask(context).setOnConnectToDialogflowListener(this).setQuery("error").execute();
+
     }
     //--------------------
 
@@ -157,6 +156,16 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
             onTextGetFromRecordListener.onTextGetFromRecord(result.getFulfillment().getSpeech());
         }
     }
+
+    //--------------------
+
+    /***
+     * 釋放資源
+     */
+    public void destroy(){
+        speechRecognizer.destroy();
+    }
+
 
     //--------------------
 
