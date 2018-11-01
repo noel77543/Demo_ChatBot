@@ -34,11 +34,11 @@ dependencies {
     //dialog flow
     implementation 'ai.api:sdk:2.0.7@aar'
     implementation 'ai.api:libai:1.6.11'
-    //recyclerview
-    implementation 'com.android.support:recyclerview-v7:28.0.0'
     //gson
     implementation 'com.google.code.gson:gson:2.6.2'
     //ButterKnife
     implementation 'com.jakewharton:butterknife:8.4.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
+    //sticky listview
+    implementation 'se.emilsjolander:stickylistheaders:2.7.0'
 }

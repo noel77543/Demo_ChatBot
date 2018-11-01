@@ -8,25 +8,24 @@ import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.util.Log;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import com.sung.noel.demo_chatbot.MainActivity;
 import com.sung.noel.demo_chatbot.R;
-import com.sung.noel.demo_chatbot.util.ai.AIActionUtil;
+
 import com.sung.noel.demo_chatbot.util.ai.AIRecognizeUtil;
 import com.sung.noel.demo_chatbot.util.LayoutSizeUtil;
 import com.sung.noel.demo_chatbot.util.ai.TextToSpeechUtil;
 import com.sung.noel.demo_chatbot.util.notification.BubbleNotification;
 import com.sung.noel.demo_chatbot.util.view.CustomButton;
 import com.sung.noel.demo_chatbot.util.window.talk.TalkPopupWindow;
-import com.sung.noel.demo_chatbot.util.window.talk.model.Talk;
-
-import java.util.ArrayList;
 
 
-public class BubbleService extends Service implements CustomButton.OnMainButtonSwipeListener, CustomButton.OnMainButtonLongClickListener, AIRecognizeUtil.OnTextGetFromRecordListener, CustomButton.OnMainButtonClickListener, com.sung.noel.demo_chatbot.util.ai.AIRecognizeUtil.OnConnectToDialogflowStateChangeListener, PopupWindow.OnDismissListener {
+public class BubbleService extends Service implements CustomButton.OnMainButtonSwipeListener, CustomButton.OnMainButtonLongClickListener, CustomButton.OnMainButtonClickListener, PopupWindow.OnDismissListener, AIRecognizeUtil.OnTextGetFromRecordListener {
     private final int _VIEW_SIZE = 150;
 
     private WindowManager windowManager;
@@ -41,11 +40,6 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
     private int phoneHeight;
     private int phoneWidth;
 
-    //當TalkPopupWindow 出現時CustomButton的X座標
-    private int whenWindowShowX;
-    //當TalkPopupWindow 出現時CustomButton的Y座標
-    private int whenWindowShowY;
-
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -57,20 +51,17 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
     @Override
     public void onCreate() {
         super.onCreate();
-        layoutSizeUtil = new LayoutSizeUtil(this);
-        talkPopupWindow = new TalkPopupWindow(this);
-        textToSpeechUtil = new TextToSpeechUtil(this);
-        bubbleNotification = new BubbleNotification(this, MainActivity.class, null);
         aiRecognizeUtil = new AIRecognizeUtil(this);
-
-        talkPopupWindow.setOnDismissListener(this);
-        aiRecognizeUtil.setOnConnectToDialogflowStateChangeListener(this);
-        aiRecognizeUtil.setOnTextGetFromRecordListener(this);
-        windowManager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+        layoutSizeUtil = new LayoutSizeUtil(this);
         int[] phoneSize = layoutSizeUtil.getPhoneSize();
         phoneHeight = phoneSize[1];
         phoneWidth = phoneSize[0];
-
+        talkPopupWindow = new TalkPopupWindow(this, aiRecognizeUtil, phoneWidth, (int) (phoneHeight - (0.6 * _VIEW_SIZE)), layoutSizeUtil.getKeyboardHeight());
+        textToSpeechUtil = new TextToSpeechUtil(this);
+        bubbleNotification = new BubbleNotification(this, MainActivity.class, null);
+        windowManager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+        talkPopupWindow.setOnDismissListener(this);
+        aiRecognizeUtil.setOnTextGetFromRecordListener(this);
 
         initCustomButton();
         initFloatWindow();
@@ -79,6 +70,8 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
         //垂直
         if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             customButton.setOrientationChanged(false);
@@ -86,6 +79,17 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
         //水平
         else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             customButton.setOrientationChanged(true);
+        }
+
+        //輸入框出現
+        if (newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) {
+            Log.e("TTT", "HARDKEYBOARDHIDDEN_NO");
+            talkPopupWindow.updateSize(true);
+        }
+        //輸入框消失
+        else if (newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES) {
+            Log.e("TTT", "HARDKEYBOARDHIDDEN_YES");
+            talkPopupWindow.updateSize(false);
         }
     }
 
@@ -175,30 +179,27 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
     //------------
 
     /***
-     * 當點擊 開啟語音辨識
+     * 當點擊 顯示記錄
      */
     @Override
     public void onMainButtonClicked() {
-        aiRecognizeUtil.startListen();
-        Toast.makeText(this, getString(R.string.toast_listen), Toast.LENGTH_SHORT).show();
+        customButton.setVisibility(View.INVISIBLE);
+        params.width = phoneWidth;
+        params.height = phoneHeight;
+        windowManager.updateViewLayout(customButton, params);
+        talkPopupWindow.showPopupWindow(customButton);
     }
+
+
     //------------
 
     /***
-     * 當長按  顯示記錄
+     * 當長按  開啟語音辨識
      */
     @Override
     public void onMainButtonLongClicked() {
-        whenWindowShowX = (phoneWidth / 2) - (customButton.getWidth() / 2);
-        whenWindowShowY = -(phoneHeight / 2);
-
-        params.x = whenWindowShowX;
-        params.y = whenWindowShowY;
-        params.width = (phoneWidth);
-        params.height = (phoneHeight) - (customButton.getHeight() / 2);
-        windowManager.updateViewLayout(customButton, params);
-
-        talkPopupWindow.showPopupWindow(customButton, phoneHeight - customButton.getHeight(), phoneWidth, new ArrayList<Talk>());
+        aiRecognizeUtil.startListen();
+        Toast.makeText(this, getString(R.string.toast_listen), Toast.LENGTH_SHORT).show();
     }
 
     //------------
@@ -208,8 +209,9 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
      */
     @Override
     public void onDismiss() {
-        params.x = whenWindowShowX;
-        params.y = whenWindowShowY;
+        customButton.setVisibility(View.VISIBLE);
+        params.x = phoneWidth;
+        params.y = -(phoneHeight);
         params.width = _VIEW_SIZE;
         params.height = _VIEW_SIZE;
         windowManager.updateViewLayout(customButton, params);
@@ -222,28 +224,7 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
      */
     @Override
     public void onTextGetFromRecord(String results) {
+        talkPopupWindow.notifyData();
         textToSpeechUtil.speak(results);
     }
-    //------------
-
-    /***
-     *  當連線至dialogflow的狀態改變
-     * @param state
-     */
-    @Override
-    public void onConnectToDialogflowStateChanged(int state) {
-        switch (state) {
-            case AIActionUtil._STATE_PREPARE:
-
-                break;
-            case AIActionUtil._STATE_CONNECTING:
-
-                break;
-            case AIActionUtil._STATE_CONNECTED:
-
-                break;
-        }
-    }
-    //---------
-
 }

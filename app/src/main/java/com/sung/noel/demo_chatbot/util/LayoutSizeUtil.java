@@ -63,4 +63,24 @@ public class LayoutSizeUtil {
         }
         return actionbarHeight;
     }
+
+    //---------------
+
+    /**
+     * 取得小鍵盤高度
+     */
+    public  int getKeyboardHeight() {
+
+        WindowManager windowManager = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
+        DisplayMetrics metrics = new DisplayMetrics();
+        windowManager.getDefaultDisplay().getMetrics(metrics);
+        int usableHeight = metrics.heightPixels;
+        windowManager.getDefaultDisplay().getRealMetrics(metrics);
+        int realHeight = metrics.heightPixels;
+        if (realHeight > usableHeight)
+            return realHeight - usableHeight;
+        else
+            return 0;
+    }
+
 }

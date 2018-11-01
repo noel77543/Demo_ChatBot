@@ -25,14 +25,12 @@ public class AIAsyncTask extends AsyncTask<AIRequest, Void, AIResponse> {
     //---------------------
     @Override
     protected void onPreExecute() {
-        onConnectToDialogflowListener.onStartToConnectDialogflow();
     }
 
     //--------------------
 
     @Override
     protected AIResponse doInBackground(AIRequest... aiRequests) {
-        onConnectToDialogflowListener.onConnectingDialogflow();
         try {
             return aiDataService.request(aiRequest);
         } catch (AIServiceException e) {
@@ -64,10 +62,6 @@ public class AIAsyncTask extends AsyncTask<AIRequest, Void, AIResponse> {
     //-------------------------
 
     public interface OnConnectToDialogflowListener {
-        void onStartToConnectDialogflow();
-
-        void onConnectingDialogflow();
-
         void onRespondFromDialogflow(AIResponse aiResponse);
     }
 

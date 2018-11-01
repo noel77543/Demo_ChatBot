@@ -16,4 +16,9 @@
     <string name="toast_speech_error">請你說清楚，好嗎</string>
     <string name="toast_speech_listening">講話呀，我聽著呢!</string>
 
+    <string name="hint_talk_board">嗨，聊聊天吧。</string>
+
+    <!--talk board-->
+    <string name="talk_board_header_bot">摯愛小三 說:</string>
+    <string name="talk_board_header_user">你 說: </string>
 </resources>

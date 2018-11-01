@@ -10,14 +10,15 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.sung.noel.demo_chatbot.R;
+import com.sung.noel.demo_chatbot.util.SharedPreferenceUtil;
+import com.sung.noel.demo_chatbot.util.TimeUtil;
+import com.sung.noel.demo_chatbot.util.window.talk.model.Talk;
 
 import ai.api.model.AIResponse;
 import ai.api.model.Result;
 
 public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConnectToDialogflowListener {
 
-
-    private OnConnectToDialogflowStateChangeListener onConnectToDialogflowStateChangeListener;
     private OnTextGetFromRecordListener onTextGetFromRecordListener;
 
     private AIActionUtil aiActionUtil;
@@ -25,13 +26,14 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
     private SpeechRecognizer speechRecognizer;
     //是否正在聆聽
     private boolean isListening = false;
-
+    private SharedPreferenceUtil sharedPreferenceUtil;
 
     public AIRecognizeUtil(Context context) {
         this.context = context;
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context);
         speechRecognizer.setRecognitionListener(this);
         aiActionUtil = new AIActionUtil(context);
+        sharedPreferenceUtil = new SharedPreferenceUtil(context, SharedPreferenceUtil._USER_DEFAULT_NAME);
     }
 
     //-------------
@@ -41,6 +43,7 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
      */
     public void startListen() {
         if (!isListening) {
+            isListening = true;
             Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
             intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
             speechRecognizer.startListening(intent);
@@ -52,7 +55,7 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
 
     @Override
     public void onReadyForSpeech(Bundle bundle) {
-        isListening = true;
+
     }
 
     @Override
@@ -79,9 +82,10 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
      */
     @Override
     public void onError(int i) {
-        new AIAsyncTask(context).setOnConnectToDialogflowListener(this).setQuery("error").execute();
-
+        isListening = false;
+        connectToDialogflow("error");
     }
+
     //--------------------
 
     /***
@@ -91,7 +95,12 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
     @Override
     public void onResults(Bundle bundle) {
         String text = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).get(0);
-        new AIAsyncTask(context).setOnConnectToDialogflowListener(this).setQuery(text).execute();
+        Talk talk = new Talk();
+        talk.setText(text);
+        talk.setType(Talk._TYPE_USER);
+
+        sharedPreferenceUtil.addTalk(talk);
+        connectToDialogflow(text);
     }
 
     @Override
@@ -103,34 +112,14 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
     public void onEvent(int i, Bundle bundle) {
 
     }
+
     //--------------------
 
     /***
-     * 準備連線至Dialogflow
-     */
-
-    @Override
-    public void onStartToConnectDialogflow() {
-        onConnectToDialogflowStateChangeListener.onConnectToDialogflowStateChanged(AIActionUtil._STATE_PREPARE);
-    }
-    //--------------------
-
-    /***
-     * 現正連線至Dialogflow
-     */
-    @Override
-    public void onConnectingDialogflow() {
-        onConnectToDialogflowStateChangeListener.onConnectToDialogflowStateChanged(AIActionUtil._STATE_CONNECTING);
-
-    }
-    //--------------------
-
-    /***
-     * 已連線至Dialogflow
+     * 取得Dialogflow回傳
      */
     @Override
     public void onRespondFromDialogflow(AIResponse aiResponse) {
-        onConnectToDialogflowStateChangeListener.onConnectToDialogflowStateChanged(AIActionUtil._STATE_CONNECTED);
 
         Result result = aiResponse.getResult();
 //        // Get parameters
@@ -152,6 +141,13 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
             case AIActionUtil._EVENT_CALL:
                 break;
         }
+
+
+        Talk talk = new Talk();
+        talk.setText(result.getFulfillment().getSpeech());
+        talk.setType(Talk._TYPE_BOT);
+        sharedPreferenceUtil.addTalk(talk);
+
         if (onTextGetFromRecordListener != null) {
             onTextGetFromRecordListener.onTextGetFromRecord(result.getFulfillment().getSpeech());
         }
@@ -162,10 +158,17 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
     /***
      * 釋放資源
      */
-    public void destroy(){
+    public void destroy() {
         speechRecognizer.destroy();
     }
+    //-------------------
 
+    /***
+     * 發起連線至dialogflow
+     */
+    public void connectToDialogflow(String text) {
+        new AIAsyncTask(context).setOnConnectToDialogflowListener(this).setQuery(text).execute();
+    }
 
     //--------------------
 
@@ -176,14 +179,4 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
     public void setOnTextGetFromRecordListener(OnTextGetFromRecordListener onTextGetFromRecordListener) {
         this.onTextGetFromRecordListener = onTextGetFromRecordListener;
     }
-    //-------------------------
-
-    public interface OnConnectToDialogflowStateChangeListener {
-        void onConnectToDialogflowStateChanged(@AIActionUtil.DialogflowState int state);
-    }
-
-    public void setOnConnectToDialogflowStateChangeListener(OnConnectToDialogflowStateChangeListener onConnectToDialogflowStateChangeListener) {
-        this.onConnectToDialogflowStateChangeListener = onConnectToDialogflowStateChangeListener;
-    }
-
 }
