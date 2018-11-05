@@ -1,6 +1,7 @@
 package com.sung.noel.demo_chatbot.util;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.WindowManager;
@@ -11,10 +12,11 @@ import android.view.WindowManager;
 
 public class LayoutSizeUtil {
     private Context context;
-
+    private  WindowManager windowManager;
     public LayoutSizeUtil(Context context) {
         this.context = context;
-
+        windowManager = (WindowManager) context
+                .getSystemService(Context.WINDOW_SERVICE);
     }
 
     //--------------
@@ -25,8 +27,6 @@ public class LayoutSizeUtil {
      */
     public int[] getPhoneSize() {
         DisplayMetrics metrics = new DisplayMetrics();
-        WindowManager windowManager = (WindowManager) context
-                .getSystemService(Context.WINDOW_SERVICE);
         windowManager.getDefaultDisplay().getMetrics(metrics);
         int phoneWidth = metrics.widthPixels;
         int phoneHeight = metrics.heightPixels;
@@ -63,24 +63,4 @@ public class LayoutSizeUtil {
         }
         return actionbarHeight;
     }
-
-    //---------------
-
-    /**
-     * 取得小鍵盤高度
-     */
-    public  int getKeyboardHeight() {
-
-        WindowManager windowManager = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
-        DisplayMetrics metrics = new DisplayMetrics();
-        windowManager.getDefaultDisplay().getMetrics(metrics);
-        int usableHeight = metrics.heightPixels;
-        windowManager.getDefaultDisplay().getRealMetrics(metrics);
-        int realHeight = metrics.heightPixels;
-        if (realHeight > usableHeight)
-            return realHeight - usableHeight;
-        else
-            return 0;
-    }
-
 }

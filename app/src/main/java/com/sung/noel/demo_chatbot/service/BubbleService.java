@@ -56,7 +56,7 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
         int[] phoneSize = layoutSizeUtil.getPhoneSize();
         phoneHeight = phoneSize[1];
         phoneWidth = phoneSize[0];
-        talkPopupWindow = new TalkPopupWindow(this, aiRecognizeUtil, phoneWidth, (int) (phoneHeight - (0.6 * _VIEW_SIZE)), layoutSizeUtil.getKeyboardHeight());
+        talkPopupWindow = new TalkPopupWindow(this, aiRecognizeUtil, phoneWidth, ((int) (phoneHeight - (0.6 * _VIEW_SIZE)) ));
         textToSpeechUtil = new TextToSpeechUtil(this);
         bubbleNotification = new BubbleNotification(this, MainActivity.class, null);
         windowManager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
@@ -79,17 +79,6 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
         //水平
         else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             customButton.setOrientationChanged(true);
-        }
-
-        //輸入框出現
-        if (newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) {
-            Log.e("TTT", "HARDKEYBOARDHIDDEN_NO");
-            talkPopupWindow.updateSize(true);
-        }
-        //輸入框消失
-        else if (newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES) {
-            Log.e("TTT", "HARDKEYBOARDHIDDEN_YES");
-            talkPopupWindow.updateSize(false);
         }
     }
 
@@ -183,7 +172,8 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
      */
     @Override
     public void onMainButtonClicked() {
-        customButton.setVisibility(View.INVISIBLE);
+        params.x = phoneWidth;
+        params.y = -(phoneHeight);
         params.width = phoneWidth;
         params.height = phoneHeight;
         windowManager.updateViewLayout(customButton, params);
@@ -209,7 +199,6 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
      */
     @Override
     public void onDismiss() {
-        customButton.setVisibility(View.VISIBLE);
         params.x = phoneWidth;
         params.y = -(phoneHeight);
         params.width = _VIEW_SIZE;

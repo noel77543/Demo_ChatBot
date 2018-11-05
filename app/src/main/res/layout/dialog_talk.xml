@@ -14,6 +14,8 @@
         android:layout_alignParentTop="true"
         android:layout_below="@+id/tv_close"
         android:layout_marginTop="30dp"
+        android:divider="@null"
+        android:dividerHeight="0dp"
         android:padding="10dp" />
 
     <TextView
