@@ -6,12 +6,11 @@ import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.sung.noel.demo_chatbot.R;
-import com.sung.noel.demo_chatbot.util.SharedPreferenceUtil;
 import com.sung.noel.demo_chatbot.util.TimeUtil;
+import com.sung.noel.demo_chatbot.util.data.DataBaseHelper;
 import com.sung.noel.demo_chatbot.util.window.talk.model.Talk;
 
 import ai.api.model.AIResponse;
@@ -20,20 +19,21 @@ import ai.api.model.Result;
 public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConnectToDialogflowListener {
 
     private OnTextGetFromRecordListener onTextGetFromRecordListener;
+    private OnDialogflowConnectStateChangeListener onDialogflowConnectStateChangeListener;
 
     private AIActionUtil aiActionUtil;
     private Context context;
     private SpeechRecognizer speechRecognizer;
     //是否正在聆聽
     private boolean isListening = false;
-    private SharedPreferenceUtil sharedPreferenceUtil;
+    private DataBaseHelper dataBaseHelper;
 
     public AIRecognizeUtil(Context context) {
         this.context = context;
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context);
         speechRecognizer.setRecognitionListener(this);
         aiActionUtil = new AIActionUtil(context);
-        sharedPreferenceUtil = new SharedPreferenceUtil(context, SharedPreferenceUtil._USER_DEFAULT_NAME);
+        dataBaseHelper = new DataBaseHelper(context, DataBaseHelper._DB_NAME, null, DataBaseHelper._DB_VERSION);
     }
 
     //-------------
@@ -95,11 +95,8 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
     @Override
     public void onResults(Bundle bundle) {
         String text = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).get(0);
-        Talk talk = new Talk();
-        talk.setText(text);
-        talk.setType(Talk._TYPE_USER);
-
-        sharedPreferenceUtil.addTalk(talk);
+        addData(text,Talk._TYPE_USER);
+//        sharedPreferenceUtil.addTalk(talk);
         connectToDialogflow(text);
     }
 
@@ -116,20 +113,22 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
     //--------------------
 
     /***
+     * dialogflow 連線狀態
+     * @param state
+     */
+    @Override
+    public void onDialogflowConnectStateChanged(int state) {
+        onDialogflowConnectStateChangeListener.onDialogflowConnectStateChanged(state);
+    }
+    //--------------------
+
+    /***
      * 取得Dialogflow回傳
      */
     @Override
     public void onRespondFromDialogflow(AIResponse aiResponse) {
 
         Result result = aiResponse.getResult();
-//        // Get parameters
-//        String parameterString = "";
-//        if (result.getParameters() != null && !result.getParameters().isEmpty()) {
-//            for (final Map.Entry<String, JsonElement> entry : result.getParameters().entrySet()) {
-//                parameterString += "(" + entry.getKey() + ", " + entry.getValue() + ") ";
-//            }
-//        }
-
         @AIActionUtil.DialogflowEvents
         String event = result.getMetadata().getIntentName();
         switch (event) {
@@ -142,15 +141,22 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
                 break;
         }
 
-
-        Talk talk = new Talk();
-        talk.setText(result.getFulfillment().getSpeech());
-        talk.setType(Talk._TYPE_BOT);
-        sharedPreferenceUtil.addTalk(talk);
-
+        addData(result.getFulfillment().getSpeech(),Talk._TYPE_BOT);
         if (onTextGetFromRecordListener != null) {
             onTextGetFromRecordListener.onTextGetFromRecord(result.getFulfillment().getSpeech());
         }
+    }
+
+    //------------------
+
+    /***
+     * 加入資料庫
+     */
+    private void addData(String message, @Talk.HistoryType int type){
+        Talk talk = new Talk();
+        talk.setMessage(message);
+        talk.setType(type);
+        dataBaseHelper.insert(DataBaseHelper._DB_TABLE_TALK,talk.toContentValues());
     }
 
     //--------------------
@@ -178,5 +184,12 @@ public class AIRecognizeUtil implements RecognitionListener, AIAsyncTask.OnConne
 
     public void setOnTextGetFromRecordListener(OnTextGetFromRecordListener onTextGetFromRecordListener) {
         this.onTextGetFromRecordListener = onTextGetFromRecordListener;
+    }
+    //--------------------
+    public interface OnDialogflowConnectStateChangeListener{
+        void onDialogflowConnectStateChanged(@AIAsyncTask.DialogflowConnectState int state);
+    }
+    public void setOnDialogflowConnectStateChangeListener(OnDialogflowConnectStateChangeListener onDialogflowConnectStateChangeListener) {
+        this.onDialogflowConnectStateChangeListener = onDialogflowConnectStateChangeListener;
     }
 }

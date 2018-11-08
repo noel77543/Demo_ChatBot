@@ -109,7 +109,7 @@ public class TalkAdapter extends BaseAdapter implements StickyListHeadersAdapter
             gravity = Gravity.END;
         }
         messageViewHolder.linearLayout.setGravity(gravity);
-        messageViewHolder.tvMessage.setText(talk.getText());
+        messageViewHolder.tvMessage.setText(talk.getMessage());
         return convertView;
     }
 

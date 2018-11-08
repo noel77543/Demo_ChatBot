@@ -6,14 +6,18 @@ import android.net.Uri;
 import android.support.annotation.IntDef;
 import android.support.annotation.StringDef;
 
+import com.sung.noel.demo_chatbot.connect.ConnectInfo;
+
 import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.URLEncoder;
+import java.text.MessageFormat;
 
 public class AIActionUtil {
     @Retention(RetentionPolicy.SOURCE)
     @StringDef({_EVENT_SEARCH, _EVENT_CALL})
+    //在Dialogflow consloe 定義的意圖
     public @interface DialogflowEvents {
     }
 
@@ -48,7 +52,7 @@ public class AIActionUtil {
     public void searchOnBrowser(String text) {
         try {
             String escapedQuery = URLEncoder.encode(text, "UTF-8");
-            Uri uri = Uri.parse("http://www.google.com/#q=" + escapedQuery);
+            Uri uri = Uri.parse(MessageFormat.format(ConnectInfo.URL_GOOGLE_SEARCH,escapedQuery));
             Intent intent = new Intent(Intent.ACTION_VIEW, uri);
             context.startActivity(intent);
         } catch (UnsupportedEncodingException e) {

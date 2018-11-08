@@ -27,7 +27,11 @@
 
         <service
             android:name=".service.BubbleService"
-            android:exported="true" />
+            android:exported="true">
+            <intent-filter android:priority="1000" >
+                <action android:name="com.sung.noel.demo_chatbot.service.BubbleService" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

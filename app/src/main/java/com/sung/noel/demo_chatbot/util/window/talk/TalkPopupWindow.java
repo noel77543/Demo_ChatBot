@@ -5,30 +5,27 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 
-import android.inputmethodservice.KeyboardView;
 import android.os.Handler;
-import android.support.annotation.IntDef;
-import android.util.Log;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.RelativeSizeSpan;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewTreeObserver;
-import android.view.WindowManager;
-import android.view.inputmethod.InputMethod;
 import android.widget.EditText;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.sung.noel.demo_chatbot.R;
-import com.sung.noel.demo_chatbot.util.LayoutSizeUtil;
-import com.sung.noel.demo_chatbot.util.SharedPreferenceUtil;
+import com.sung.noel.demo_chatbot.util.TimeUtil;
 import com.sung.noel.demo_chatbot.util.ai.AIRecognizeUtil;
+import com.sung.noel.demo_chatbot.util.data.DataBaseHelper;
 import com.sung.noel.demo_chatbot.util.window.talk.adapter.TalkAdapter;
 import com.sung.noel.demo_chatbot.util.window.talk.model.Talk;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.reflect.Field;
+import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -43,26 +40,36 @@ public class TalkPopupWindow extends PopupWindow implements ViewTreeObserver.OnG
     EditText editText;
     @BindView(R.id.relative_layout)
     RelativeLayout relativeLayout;
+    @BindView(R.id.tv_cover)
+    TextView tvCover;
 
     private Context context;
     private TalkAdapter talkAdapter;
-    private SharedPreferenceUtil sharedPreferenceUtil;
+    private ArrayList<Talk> talks = new ArrayList<>();
     private int dataSize;
     private AIRecognizeUtil aiRecognizeUtil;
-
+    private DataBaseHelper dataBaseHelper;
 
     private int viewWidth;
     private int keyboardHeight;
     private int viewHeight;
 
 
+    //第幾個文字
+    private int textIndex = 0;
+    //行為重複間隔
+    private final int DURATION = 150;
+    //放大倍率
+    private final float TEXT_SIZE = 1.5f;
+    private Handler handler;
+    private Runnable runnable;
     public TalkPopupWindow(final Context context, AIRecognizeUtil aiRecognizeUtil, int viewWidth, final int viewHeight) {
         this.context = context;
         this.aiRecognizeUtil = aiRecognizeUtil;
         this.viewWidth = viewWidth;
         this.viewHeight = viewHeight;
 
-        view = LayoutInflater.from(context).inflate(R.layout.dialog_talk, null, false);
+        view = LayoutInflater.from(context).inflate(R.layout.window_talk, null, false);
         ButterKnife.bind(this, view);
 
         setContentView(view);
@@ -75,14 +82,39 @@ public class TalkPopupWindow extends PopupWindow implements ViewTreeObserver.OnG
     }
 
     //----------------
+
     private void init() {
-        sharedPreferenceUtil = new SharedPreferenceUtil(context, SharedPreferenceUtil._USER_DEFAULT_NAME);
+        dataBaseHelper = new DataBaseHelper(context, DataBaseHelper._DB_NAME, null, DataBaseHelper._DB_VERSION);
         talkAdapter = new TalkAdapter(context);
         stickyListHeadersListView.setAdapter(talkAdapter);
         stickyListHeadersListView.setScrollBarStyle(View.SCROLLBARS_OUTSIDE_OVERLAY);
         stickyListHeadersListView.setOverScrollMode(View.OVER_SCROLL_NEVER);
 
+        runnable = new Runnable() {
+            @Override
+            public void run() {
+                if (textIndex < tvCover.getText().toString().length()) {
+                    tvCover.setText(getSpannedText(tvCover.getText().toString(), textIndex));
+                    textIndex++;
+                } else {
+                    textIndex = 0;
+                }
+                handler.postDelayed(this, DURATION);
+            }
+        };
+
+        handler = new Handler();
     }
+
+
+    //--------------
+
+    private CharSequence getSpannedText(String text, int strIndext) {
+        SpannableStringBuilder builder = new SpannableStringBuilder(text);
+        builder.setSpan(new RelativeSizeSpan(TEXT_SIZE), strIndext, strIndext + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return builder;
+    }
+
 
     //----------
 
@@ -99,8 +131,9 @@ public class TalkPopupWindow extends PopupWindow implements ViewTreeObserver.OnG
                 if (text.length() > 0) {
                     Talk talk = new Talk();
                     talk.setType(Talk._TYPE_USER);
-                    talk.setText(editText.getText().toString());
-                    sharedPreferenceUtil.addTalk(talk);
+                    talk.setMessage(editText.getText().toString());
+
+                    dataBaseHelper.insert(DataBaseHelper._DB_TABLE_TALK, talk.toContentValues());
                     aiRecognizeUtil.connectToDialogflow(text);
                     editText.setText("");
                 }
@@ -128,13 +161,27 @@ public class TalkPopupWindow extends PopupWindow implements ViewTreeObserver.OnG
      * 刷新資料
      */
     public void notifyData() {
-        dataSize = sharedPreferenceUtil.getTalks().size();
-        talkAdapter.setData(sharedPreferenceUtil.getTalks());
+        talks = dataBaseHelper.getTalkDatas();
+        dataSize = talks.size();
+        talkAdapter.setData(talks);
 
         if (dataSize > 0) {
             stickyListHeadersListView.setSelection(dataSize - 1);
         }
     }
+    //-------------
+
+    public void loading(boolean isLoading) {
+        if (isLoading) {
+            tvCover.setVisibility(View.VISIBLE);
+            handler.postDelayed(runnable, DURATION);
+        } else {
+            tvCover.setVisibility(View.GONE);
+            handler.removeCallbacks(runnable);
+        }
+    }
+
+
     //--------------
 
     /***
@@ -155,5 +202,4 @@ public class TalkPopupWindow extends PopupWindow implements ViewTreeObserver.OnG
         }
         update(viewWidth, newViewHeight);
     }
-
 }

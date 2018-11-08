@@ -1,4 +1,4 @@
-package com.sung.noel.demo_chatbot.util;
+package com.sung.noel.demo_chatbot.util.data;
 
 import android.content.Context;
 import android.content.SharedPreferences;

@@ -8,8 +8,6 @@ import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.util.Log;
-import android.view.View;
 import android.view.WindowManager;
 import android.widget.PopupWindow;
 import android.widget.Toast;
@@ -17,15 +15,17 @@ import android.widget.Toast;
 import com.sung.noel.demo_chatbot.MainActivity;
 import com.sung.noel.demo_chatbot.R;
 
+import com.sung.noel.demo_chatbot.util.ai.AIAsyncTask;
 import com.sung.noel.demo_chatbot.util.ai.AIRecognizeUtil;
 import com.sung.noel.demo_chatbot.util.LayoutSizeUtil;
 import com.sung.noel.demo_chatbot.util.ai.TextToSpeechUtil;
+import com.sung.noel.demo_chatbot.util.data.DataBaseHelper;
 import com.sung.noel.demo_chatbot.util.notification.BubbleNotification;
 import com.sung.noel.demo_chatbot.util.view.CustomButton;
 import com.sung.noel.demo_chatbot.util.window.talk.TalkPopupWindow;
 
 
-public class BubbleService extends Service implements CustomButton.OnMainButtonSwipeListener, CustomButton.OnMainButtonLongClickListener, CustomButton.OnMainButtonClickListener, PopupWindow.OnDismissListener, AIRecognizeUtil.OnTextGetFromRecordListener {
+public class BubbleService extends Service implements CustomButton.OnMainButtonSwipeListener, CustomButton.OnMainButtonLongClickListener, CustomButton.OnMainButtonClickListener, PopupWindow.OnDismissListener, AIRecognizeUtil.OnTextGetFromRecordListener, AIRecognizeUtil.OnDialogflowConnectStateChangeListener {
     private final int _VIEW_SIZE = 150;
 
     private WindowManager windowManager;
@@ -39,6 +39,7 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
     private LayoutSizeUtil layoutSizeUtil;
     private int phoneHeight;
     private int phoneWidth;
+
 
     @Nullable
     @Override
@@ -56,12 +57,13 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
         int[] phoneSize = layoutSizeUtil.getPhoneSize();
         phoneHeight = phoneSize[1];
         phoneWidth = phoneSize[0];
-        talkPopupWindow = new TalkPopupWindow(this, aiRecognizeUtil, phoneWidth, ((int) (phoneHeight - (0.6 * _VIEW_SIZE)) ));
+        talkPopupWindow = new TalkPopupWindow(this, aiRecognizeUtil, phoneWidth, ((int) (phoneHeight - (0.6 * _VIEW_SIZE))));
         textToSpeechUtil = new TextToSpeechUtil(this);
         bubbleNotification = new BubbleNotification(this, MainActivity.class, null);
         windowManager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
         talkPopupWindow.setOnDismissListener(this);
         aiRecognizeUtil.setOnTextGetFromRecordListener(this);
+        aiRecognizeUtil.setOnDialogflowConnectStateChangeListener(this);
 
         initCustomButton();
         initFloatWindow();
@@ -172,8 +174,6 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
      */
     @Override
     public void onMainButtonClicked() {
-        params.x = phoneWidth;
-        params.y = -(phoneHeight);
         params.width = phoneWidth;
         params.height = phoneHeight;
         windowManager.updateViewLayout(customButton, params);
@@ -204,6 +204,7 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
         params.width = _VIEW_SIZE;
         params.height = _VIEW_SIZE;
         windowManager.updateViewLayout(customButton, params);
+        talkPopupWindow.loading(false);
     }
     //------------
 
@@ -215,5 +216,30 @@ public class BubbleService extends Service implements CustomButton.OnMainButtonS
     public void onTextGetFromRecord(String results) {
         talkPopupWindow.notifyData();
         textToSpeechUtil.speak(results);
+    }
+    //------------
+
+    /***
+     * 當dialogflow 連線狀態改變
+     * @param state
+     */
+    @Override
+    public void onDialogflowConnectStateChanged(int state) {
+        if (talkPopupWindow.isShowing()) {
+            switch (state) {
+                //連線前
+                case AIAsyncTask.STATE_PREPARE:
+                    talkPopupWindow.loading(true);
+                    break;
+                //連線中
+                case AIAsyncTask.STATE_CONNECTING:
+
+                    break;
+                //連線後
+                case AIAsyncTask.STATE_FINISH:
+                    talkPopupWindow.loading(false);
+                    break;
+            }
+        }
     }
 }
