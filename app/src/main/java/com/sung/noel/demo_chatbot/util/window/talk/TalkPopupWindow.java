@@ -109,9 +109,9 @@ public class TalkPopupWindow extends PopupWindow implements ViewTreeObserver.OnG
 
     //--------------
 
-    private CharSequence getSpannedText(String text, int strIndext) {
+    private CharSequence getSpannedText(String text, int strIndex) {
         SpannableStringBuilder builder = new SpannableStringBuilder(text);
-        builder.setSpan(new RelativeSizeSpan(TEXT_SIZE), strIndext, strIndext + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        builder.setSpan(new RelativeSizeSpan(TEXT_SIZE), strIndex, strIndex + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         return builder;
     }
 

@@ -76,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
             if (appOpsMgr == null){
                 isAllowed = false;
             }else {
-                //"android:system_alert_window"
                 int mode = appOpsMgr.checkOpNoThrow(AppOpsManager.OPSTR_SYSTEM_ALERT_WINDOW, android.os.Process.myUid(),getPackageName());
                 isAllowed =  mode == AppOpsManager.MODE_ALLOWED || mode == AppOpsManager.MODE_IGNORED;
             }

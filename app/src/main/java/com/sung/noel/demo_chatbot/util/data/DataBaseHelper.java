@@ -16,8 +16,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     private Context context;
 
     private static SQLiteDatabase database;
-    private final int BUFFER_SIZE = 1024;
-
     public static final int _DB_VERSION = 1;
     public static final String _DB_NAME = "ChatBoardData.db";
 
@@ -28,16 +26,14 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     public static final String _DB_KEY_SID = "Sid";
     public static final String _DB_KEY_TYPE = "Type";
     public static final String _DB_KEY_MESSAGE = "Message";
-    public static final String _DB_KEY_TIME = "Time";
 
     //建立Talk table
-    public static final String _DB_CREATE_TABLE_TALK =
-            "CREATE  TABLE " + _DB_TABLE_TALK +
-                    "(" +
-                    _DB_KEY_SID + " INTEGER PRIMARY KEY AUTOINCREMENT , " +
-                    _DB_KEY_TYPE + " INTEGER , " +
-                    _DB_KEY_MESSAGE + " TEXT" +
-                    ");";
+    public static final String _DB_CREATE_TABLE_TALK = "CREATE  TABLE " + _DB_TABLE_TALK +
+            "(" +
+            _DB_KEY_SID + " INTEGER PRIMARY KEY AUTOINCREMENT , " +
+            _DB_KEY_TYPE + " INTEGER , " +
+            _DB_KEY_MESSAGE + " TEXT" +
+            ");";
 
 
     //-----------

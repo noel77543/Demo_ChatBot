@@ -86,7 +86,6 @@ public class BubbleNotification extends Notification {
 
         flags = PendingIntent.FLAG_CANCEL_CURRENT;
 
-
         notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
         pendingIntent = PendingIntent.getActivity(context, NOTIFICATION_ID, intentNotification, flags);
         defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
